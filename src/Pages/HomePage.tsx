@@ -6,6 +6,7 @@ import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField
 import { SearchTypes } from "../Utils/types";
 import useToast from "../Hooks/useToast";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 type Props = {};
 const columns: Array<GridColDef> = [
@@ -20,7 +21,7 @@ const columns: Array<GridColDef> = [
 	},
 	{
 		field: "Title",
-		width: 200,
+		width: 400,
 		headerClassName: "font-semibold lg:text-xl",
 	},
 	{
@@ -92,7 +93,14 @@ const HomePage = (props: Props) => {
 	};
 	return (
 		<div className='min-w-7xl flex flex-col items-center gap-y-10 h-screen bg-slate-300 relative'>
-			<div className='flex flex-col items-center w-full gap-y-5 xl:w-1/3 mt-20'>
+			<motion.div
+				initial={{ opacity: 0, x: -50 }}
+				animate={{ opacity: 1, x: 0 }}
+				transition={{
+					duration: 0.3,
+					ease: "easeInOut",
+				}}
+				className='flex flex-col items-center w-full gap-y-5 xl:w-1/3 mt-20'>
 				<TextField
 					id='outlined-search'
 					label={`Search in ${formValues.searchType}`}
@@ -128,9 +136,17 @@ const HomePage = (props: Props) => {
 						<MenuItem value={"Tv Serie Episodes"}>Tv Serie Episodes</MenuItem>
 					</Select>
 				</FormControl>
-			</div>
+			</motion.div>
 			{movies.length > 0 ? (
-				<div className='h-[611px] w-11/12 xl:w-1/3 bg-white'>
+				<motion.div
+					initial={{ opacity: 0, x: 50 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{
+						duration: 0.3,
+						ease: "easeInOut",
+						delay: 0.5,
+					}}
+					className='h-[611px] w-11/12 xl:w-1/2 bg-white drop-shadow-lg'>
 					<DataGrid
 						rows={movies}
 						columns={columns}
@@ -158,7 +174,7 @@ const HomePage = (props: Props) => {
 							}
 						}}
 					/>
-				</div>
+				</motion.div>
 			) : (
 				<code className='text-slate-900'>Search for some movies first..</code>
 			)}
