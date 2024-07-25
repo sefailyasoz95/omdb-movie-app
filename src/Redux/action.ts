@@ -34,3 +34,25 @@ export const searchMoviesByName = createAsyncThunk("app/searchMoviesByName", asy
 		};
 	}
 });
+
+export const searchMovieById = createAsyncThunk("app/searchMovieById", async (id: string) => {
+	try {
+		const response = await axios.get(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${id}&plot=full`);
+		if (response.data.Response === "True") {
+			return {
+				data: response.data,
+				message: "",
+			};
+		} else {
+			return {
+				data: [],
+				message: response.data.Error,
+			};
+		}
+	} catch (error) {
+		return {
+			data: [],
+			message: "Something went wrong!",
+		};
+	}
+});

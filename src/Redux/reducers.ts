@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { InitialState } from "../Utils/types";
-import { searchMoviesByName } from "./action";
+import { searchMovieById, searchMoviesByName } from "./action";
 
 export const initialState: InitialState = {
 	error: false,
@@ -8,6 +8,7 @@ export const initialState: InitialState = {
 	message: "",
 	movies: [],
 	loading: false,
+	movieDetail: undefined,
 };
 
 export const reducer = createSlice({
@@ -16,6 +17,9 @@ export const reducer = createSlice({
 	reducers: {
 		clearMovies: (state) => {
 			state.movies = [];
+		},
+		clearMovieDetail: (state) => {
+			state.movieDetail = undefined;
 		},
 	},
 	extraReducers: (builder) => {
@@ -36,11 +40,27 @@ export const reducer = createSlice({
 					state.error = true;
 				}
 				state.loading = false;
+				// *********** searchMoviesByName END *********** \\
+			})
+			.addCase(searchMovieById.pending, (state) => {
+				// *********** searchMovieById START *********** \\
+				state.loading = true;
+				state.success = false;
+				state.error = false;
+				state.message = "";
+			})
+			.addCase(searchMovieById.fulfilled, (state, action) => {
+				if (!action.payload.message) {
+					state.movieDetail = action.payload.data;
+				} else {
+					state.message = action.payload.message;
+					state.error = true;
+				}
+				state.loading = false;
 			});
-		// *********** searchMoviesByName END *********** \\
+		// *********** searchMovieById END *********** \\
 	},
 });
-
-export const { clearMovies } = reducer.actions;
+export const { clearMovies, clearMovieDetail } = reducer.actions;
 
 export default reducer.reducer;

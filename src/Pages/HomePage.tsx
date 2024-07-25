@@ -5,6 +5,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
 import { SearchTypes } from "../Utils/types";
 import useToast from "../Hooks/useToast";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
 const columns: Array<GridColDef> = [
@@ -36,6 +37,7 @@ type FormValueTypes = {
 	searchType: SearchTypes;
 };
 const HomePage = (props: Props) => {
+	const navigate = useNavigate();
 	const [page, setPage] = useState(1);
 	const { movies, loading, error, message } = useAppSelector((state) => state.global);
 	const { showToast } = useToast();
@@ -90,7 +92,7 @@ const HomePage = (props: Props) => {
 	};
 	return (
 		<div className='min-w-7xl flex flex-col items-center gap-y-10 h-screen bg-slate-300 relative'>
-			<div className='flex flex-col items-center w-full gap-y-5 lg:w-1/3 mt-20'>
+			<div className='flex flex-col items-center w-full gap-y-5 xl:w-1/3 mt-20'>
 				<TextField
 					id='outlined-search'
 					label={`Search in ${formValues.searchType}`}
@@ -135,6 +137,9 @@ const HomePage = (props: Props) => {
 						loading={loading}
 						getRowId={(row) => row.imdbID}
 						rowHeight={100}
+						onRowClick={(row) => {
+							navigate(`/details/${row.id}`);
+						}}
 						initialState={{
 							pagination: {
 								paginationModel: { page: 0, pageSize: 5 },
