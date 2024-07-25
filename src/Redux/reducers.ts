@@ -13,7 +13,11 @@ export const initialState: InitialState = {
 export const reducer = createSlice({
 	name: "global",
 	initialState,
-	reducers: {},
+	reducers: {
+		clearMovies: (state) => {
+			state.movies = [];
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			// *********** searchMoviesByName START *********** \\
@@ -24,13 +28,19 @@ export const reducer = createSlice({
 				state.message = "";
 			})
 			.addCase(searchMoviesByName.fulfilled, (state, action) => {
-				state.movies = [...state.movies, ...action.payload.data];
+				if (!action.payload.message) {
+					state.movies = action.payload.newSearch ? action.payload.data : [...state.movies, ...action.payload.data];
+				} else {
+					state.movies = [];
+					state.message = action.payload.message;
+					state.error = true;
+				}
 				state.loading = false;
 			});
 		// *********** searchMoviesByName END *********** \\
 	},
 });
 
-export const {} = reducer.actions;
+export const { clearMovies } = reducer.actions;
 
 export default reducer.reducer;

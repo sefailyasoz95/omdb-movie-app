@@ -2,76 +2,161 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../Redux/store";
 import { searchMoviesByName } from "../Redux/action";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import ThemeToggleButton from "../Components/ThemeToggleButton";
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { SearchTypes } from "../Utils/types";
+import useToast from "../Hooks/useToast";
 
 type Props = {};
 const columns: Array<GridColDef> = [
 	{
 		field: "imdbID",
 		headerName: "ID",
-		headerClassName: "font-semibold text-xl",
+		headerClassName: "font-semibold lg:text-xl",
 	},
 	{
 		field: "Year",
-		headerClassName: "font-semibold text-xl",
+		headerClassName: "font-semibold lg:text-xl",
 	},
 	{
 		field: "Title",
 		width: 200,
-		headerClassName: "font-semibold text-xl",
+		headerClassName: "font-semibold lg:text-xl",
 	},
 	{
 		field: "Poster",
 		renderCell: (row) => <img src={row.value} className='h-full object-contain' />,
-		headerClassName: "font-semibold text-xl",
+		headerClassName: "font-semibold lg:text-xl flex flex-1",
+		cellClassName: "flex flex-1",
 	},
 ];
+const debounce = 250;
+type FormValueTypes = {
+	releaseYear?: number;
+	searchValue: string;
+	searchType: SearchTypes;
+};
 const HomePage = (props: Props) => {
 	const [page, setPage] = useState(1);
-	const { movies, loading } = useAppSelector((state) => state.global);
-
+	const { movies, loading, error, message } = useAppSelector((state) => state.global);
+	const { showToast } = useToast();
+	const [formValues, setFormValues] = useState<FormValueTypes>({
+		releaseYear: undefined,
+		searchValue: "Pokemon",
+		searchType: "Movies",
+	});
 	const dipsatch = useAppDispatch();
+	useEffect(() => {
+		if (error && message) {
+			showToast({
+				message,
+				type: "error",
+			});
+		}
+	}, [error, message]);
 
 	useEffect(() => {
-		dipsatch(
-			searchMoviesByName({
-				page,
-				searchValue: "movie",
-			})
-		);
-	}, []);
+		if (formValues.searchValue) {
+			var timeout = setTimeout(() => {
+				dipsatch(
+					searchMoviesByName({
+						page,
+						searchValue: formValues.searchValue,
+						type: formValues.searchType,
+						releaseYear: formValues.releaseYear,
+					})
+				);
+			}, debounce);
 
+			return () => {
+				if (timeout) {
+					clearTimeout(timeout);
+				}
+			};
+		} else {
+			// if I don't give a search value API returns error, to avoid this I handled it myself
+			showToast({
+				message: "You need to enter a search value",
+				type: "error",
+			});
+		}
+	}, [formValues]);
+
+	const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setFormValues({ ...formValues, [event.currentTarget.name]: event.currentTarget.value });
+	};
+
+	const handleChange = (event: SelectChangeEvent) => {
+		setFormValues({ ...formValues, searchType: event.target.value as SearchTypes });
+	};
 	return (
-		<div className='min-w-7xl flex items-center justify-center h-screen dark:bg-slate-900 bg-slate-200 relative'>
-			<div className='absolute right-5 top-3'>
-				<ThemeToggleButton />
-			</div>
-
-			<div className='shadow bg-white'>
-				<DataGrid
-					rows={movies}
-					columns={columns}
-					loading={loading}
-					getRowId={(row) => row.imdbID}
-					rowHeight={100}
-					initialState={{
-						pagination: {
-							paginationModel: { page: 0, pageSize: 5 },
-						},
-					}}
-					onPaginationModelChange={(val) => {
-						if (val.page + 1 > page) {
-							setPage(val.page + 1);
-							dipsatch(
-								searchMoviesByName({
-									page: val.page + 1,
-									searchValue: "movie",
-								})
-							);
-						}
-					}}
+		<div className='min-w-7xl flex flex-col items-center gap-y-10 h-screen bg-slate-300 relative'>
+			<div className='flex flex-col items-center w-full gap-y-5 lg:w-1/3 mt-20'>
+				<TextField
+					id='outlined-search'
+					label={`Search in ${formValues.searchType}`}
+					onChange={handleInput}
+					name='searchValue'
+					type='search'
+					autoFocus
+					value={formValues.searchValue}
+					className='w-11/12'
 				/>
+				<TextField
+					id='outlined-search'
+					label={`Enter a release year`}
+					onChange={handleInput}
+					name='releaseYear'
+					type='number'
+					value={formValues.releaseYear}
+					className='w-11/12'
+				/>
+				<FormControl className='w-11/12'>
+					<InputLabel id='select-label'>Search In</InputLabel>
+					<Select
+						labelId='select-label'
+						id='select'
+						name='searchType'
+						value={formValues.searchType}
+						label='SearchType'
+						onChange={handleChange}>
+						<MenuItem value={"Movies"} className='text-slate-200'>
+							Movies
+						</MenuItem>
+						<MenuItem value={"Tv Series"}>Tv Series</MenuItem>
+						<MenuItem value={"Tv Serie Episodes"}>Tv Serie Episodes</MenuItem>
+					</Select>
+				</FormControl>
 			</div>
+			{movies.length > 0 ? (
+				<div className='h-[611px] w-11/12 xl:w-1/3 bg-white'>
+					<DataGrid
+						rows={movies}
+						columns={columns}
+						loading={loading}
+						getRowId={(row) => row.imdbID}
+						rowHeight={100}
+						initialState={{
+							pagination: {
+								paginationModel: { page: 0, pageSize: 5 },
+							},
+						}}
+						onPaginationModelChange={(val) => {
+							if (val.page + 1 > page) {
+								setPage(val.page + 1);
+								dipsatch(
+									searchMoviesByName({
+										page: val.page + 1,
+										searchValue: "movie",
+										type: formValues.searchType,
+									})
+								);
+							}
+						}}
+					/>
+				</div>
+			) : (
+				<code className='text-slate-900'>Search for some movies first..</code>
+			)}
 		</div>
 	);
 };

@@ -19,3 +19,5 @@ export type SearchMovieType = {
 	Type: string;
 	Poster: string;
 };
+
+export type SearchTypes = "Movies" | "Tv Series" | "Tv Serie Episodes";

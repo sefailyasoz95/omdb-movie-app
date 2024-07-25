@@ -20,7 +20,3 @@ body * {
     /* Firefox */
   }
 }
-
-.shadow {
-  @apply dark:shadow-slate-700 dark:shadow-xl drop-shadow-lg
-}
