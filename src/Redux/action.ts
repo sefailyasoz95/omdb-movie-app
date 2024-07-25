@@ -12,6 +12,8 @@ export const searchMoviesByName = createAsyncThunk("app/searchMoviesByName", asy
 			`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${data.searchValue}&page=${data.page}`
 		);
 		if (response.data.Response === "True") {
+			console.log("response.data.Search: ", response.data.Search);
+
 			return {
 				data: response.data.Search,
 				message: "",

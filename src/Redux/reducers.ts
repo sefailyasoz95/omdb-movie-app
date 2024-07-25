@@ -24,7 +24,7 @@ export const reducer = createSlice({
 				state.message = "";
 			})
 			.addCase(searchMoviesByName.fulfilled, (state, action) => {
-				state.movies = action.payload.data;
+				state.movies = [...state.movies, ...action.payload.data];
 				state.loading = false;
 			});
 		// *********** searchMoviesByName END *********** \\
